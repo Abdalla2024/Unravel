@@ -8,6 +8,11 @@ class GameScene: SKScene {
     private let moveSpeed: CGFloat = 2.0
 
     override func didMove(to view: SKView) {
+        // Set up scene physics
+        let sceneBody = SKPhysicsBody(edgeLoopFrom: self.frame)
+        sceneBody.friction = 0
+        self.physicsBody = sceneBody
+
         // Access the view model
         if let userData = userData, let gameViewModel = userData["gameViewModel"] as? GameViewModel {
             self.gameViewModel = gameViewModel
@@ -29,6 +34,12 @@ class GameScene: SKScene {
             playerNode.position = CGPoint(x: frame.midX, y: frame.midY)
             playerNode.size = CGSize(width: 50, height: 50) // Adjust size as needed
             playerNode.name = "player"
+            
+            // Add physics body to player
+            playerNode.physicsBody = SKPhysicsBody(rectangleOf: playerNode.size)
+            playerNode.physicsBody?.affectedByGravity = false
+            playerNode.physicsBody?.allowsRotation = false
+            
             self.player = playerNode
             addChild(playerNode)
         }
