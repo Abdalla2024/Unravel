@@ -28,6 +28,16 @@ class GameScene: SKScene {
         background.zPosition = -1 // Behind other nodes
         addChild(background)
 
+        // Set up interactive objects
+        for object in viewModel.currentRoom.objects {
+            let objectNode = SKSpriteNode(imageNamed: object.imageName)
+            objectNode.position = object.position
+            objectNode.size = CGSize(width: 80, height: 80) // Adjust size as needed
+            objectNode.physicsBody = SKPhysicsBody(rectangleOf: objectNode.size)
+            objectNode.physicsBody?.isDynamic = false // Objects don't move
+            addChild(objectNode)
+        }
+
         // Set up the player
         if let avatar = viewModel.selectedAvatar {
             let playerNode = SKSpriteNode(imageNamed: avatar.imageName)
