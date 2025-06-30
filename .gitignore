@@ -1,0 +1,17 @@
+# Xcode
+.DS_Store
+/build
+*.xcodeproj/project.xcworkspace
+*.xcodeproj/xcuserdata/
+*.xcworkspace/
+xcuserdata/
+
+# Swift Package Manager
+/.build
+/Packages
+
+# Cocoapods
+/Pods
+
+# Carthage
+/Carthage 
