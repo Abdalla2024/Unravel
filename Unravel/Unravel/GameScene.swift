@@ -31,6 +31,7 @@ class GameScene: SKScene {
         // Set up interactive objects
         for object in viewModel.currentRoom.objects {
             let objectNode = SKSpriteNode(imageNamed: object.imageName)
+            objectNode.name = object.id.uuidString
             objectNode.position = object.position
             objectNode.size = CGSize(width: 80, height: 80) // Adjust size as needed
             objectNode.physicsBody = SKPhysicsBody(rectangleOf: objectNode.size)
@@ -63,11 +64,40 @@ class GameScene: SKScene {
         // Called before each frame is rendered
         guard let player = player else { return }
         
+        // Player Movement
         let normalizedPosition = CGPoint(x: stickPosition.x / 50.0, y: stickPosition.y / 50.0)
         
         let newX = player.position.x + (normalizedPosition.x * moveSpeed)
         let newY = player.position.y - (normalizedPosition.y * moveSpeed) // Inverted Y-axis for SpriteKit
         
         player.position = CGPoint(x: newX, y: newY)
+        
+        // Proximity check for interactive objects
+        checkForNearbyObjects()
+    }
+
+    private func checkForNearbyObjects() {
+        guard let player = player, let viewModel = gameViewModel else { return }
+
+        let interactionThreshold: CGFloat = 75.0
+        var foundObject: InteractiveObject? = nil
+
+        for objectData in viewModel.currentRoom.objects {
+            if let objectNode = self.childNode(withName: objectData.id.uuidString) {
+                let distance = player.position.distance(to: objectNode.position)
+                if distance < interactionThreshold {
+                    foundObject = objectData
+                    break // Found the closest object, no need to check others
+                }
+            }
+        }
+        
+        viewModel.setNearbyObject(foundObject)
+    }
+}
+
+extension CGPoint {
+    func distance(to point: CGPoint) -> CGFloat {
+        return sqrt(pow(self.x - point.x, 2) + pow(self.y - point.y, 2))
     }
 }
