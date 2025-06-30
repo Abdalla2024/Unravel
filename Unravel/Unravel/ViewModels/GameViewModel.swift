@@ -8,6 +8,7 @@ class GameViewModel: ObservableObject {
     @Published var alertMessage = ""
     @Published var selectedAvatar: Avatar?
     @Published var gameStarted = false
+    @Published var nearbyObject: InteractiveObject?
 
     init() {
         loadRooms()
@@ -33,6 +34,12 @@ class GameViewModel: ObservableObject {
         self.rooms = [room1, room2]
     }
     
+    func setNearbyObject(_ object: InteractiveObject?) {
+        if self.nearbyObject?.id != object?.id {
+            self.nearbyObject = object
+        }
+    }
+
     func submitAnswer(for puzzle: Puzzle, answer: String) {
         if let roomIndex = rooms.firstIndex(where: { $0.id == currentRoom.id }),
            let puzzleIndex = rooms[roomIndex].puzzles.firstIndex(where: { $0.id == puzzle.id }) {
