@@ -6,4 +6,5 @@ struct Room: Identifiable {
     var description: String
     var backgroundImage: String
     var puzzles: [Puzzle]
+    var objects: [InteractiveObject]
 } 
