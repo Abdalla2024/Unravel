@@ -24,10 +24,11 @@ class GameViewModel: ObservableObject {
     func loadRooms() {
         // Sample data for now. Later, we can load this from a file.
         let puzzle1 = Puzzle(title: "Riddle Me This", question: "I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?", answer: "A map")
-        let room1 = Room(name: "The Scholar's Study", description: "A quiet room filled with books and secrets.", backgroundImage: "study", puzzles: [puzzle1])
+        let desk = InteractiveObject(name: "Desk", imageName: "desk_image", position: CGPoint(x: 150, y: 150), description: "A sturdy wooden desk covered in papers.")
+        let room1 = Room(name: "The Scholar's Study", description: "A quiet room filled with books and secrets.", backgroundImage: "study", puzzles: [puzzle1], objects: [desk])
 
         let puzzle2 = Puzzle(title: "Codebreaker", question: "What has to be broken before you can use it?", answer: "An egg")
-        let room2 = Room(name: "The Alchemist's Lab", description: "Potions bubble and strange contraptions whir.", backgroundImage: "lab", puzzles: [puzzle2])
+        let room2 = Room(name: "The Alchemist's Lab", description: "Potions bubble and strange contraptions whir.", backgroundImage: "lab", puzzles: [puzzle2], objects: [])
         
         self.rooms = [room1, room2]
     }
