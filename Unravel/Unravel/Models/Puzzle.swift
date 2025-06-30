@@ -6,4 +6,4 @@ struct Puzzle: Identifiable {
     var question: String
     var answer: String
     var isSolved: Bool = false
-}
+} 
