@@ -31,6 +31,27 @@ struct ContentView: View {
                 
                 AnalogStickView(stickPosition: $stickPosition)
                     .padding(40)
+                    
+                if gameViewModel.nearbyObject != nil {
+                    Button("Examine") {
+                        if let object = gameViewModel.nearbyObject {
+                            gameViewModel.alertMessage = object.description
+                            gameViewModel.showAlert = true
+                        }
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                    .padding(.bottom, 40)
+                    .frame(maxWidth: .infinity, alignment: .bottom)
+                }
+            }
+            .alert(isPresented: $gameViewModel.showAlert) {
+                Alert(title: Text("Examine"), message: Text(gameViewModel.alertMessage), dismissButton: .default(Text("OK")))
+            }
+            .onChange(of: stickPosition) {
+                (scene as? GameScene)?.updateStickPosition(stickPosition)
             }
         } else {
             AvatarSelectionView()
