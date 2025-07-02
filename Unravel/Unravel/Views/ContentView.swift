@@ -11,8 +11,6 @@ import SpriteKit
 struct ContentView: View {
     @EnvironmentObject var gameViewModel: GameViewModel
     @State private var stickPosition: CGPoint = .zero
-    @State private var showPuzzleInput = false
-    @State private var puzzleAnswer = ""
 
     // Create a scene
     var scene: SKScene {
@@ -102,19 +100,6 @@ struct ContentView: View {
                                 .cornerRadius(8)
                                 .font(.caption)
                             }
-                            
-                            // Puzzle button
-                            if !gameViewModel.currentRoom.puzzles.isEmpty {
-                                Button("Solve Puzzle") {
-                                    showPuzzleInput = true
-                                }
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.purple)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                                .font(.caption)
-                            }
                         }
                         .padding(.trailing, 20)
                     }
@@ -123,19 +108,27 @@ struct ContentView: View {
                     if gameViewModel.nearbyObject != nil {
                         Button("Examine") {
                             if let object = gameViewModel.nearbyObject {
-                                // Check if this object can be collected
-                                if object.name == "Old Key" {
+                                // Handle special interactive objects that solve puzzles automatically
+                                if object.name == "Keypad" {
+                                    gameViewModel.solvePuzzle(answer: "1987")
+                                } else if object.name == "Locked Cabinet" {
+                                    gameViewModel.solvePuzzle(answer: "1987")
+                                } else if object.name == "Exit Door" {
+                                    gameViewModel.solvePuzzle(answer: "yes")
+                                } else if object.name == "Old Key" {
                                     let keyItem = InventoryItem(name: "Old Key", description: "An old brass key that might unlock something.", imageName: "key_image")
                                     gameViewModel.addToInventory(keyItem)
                                     gameViewModel.alertMessage = "You picked up the \(object.name)!"
+                                    gameViewModel.showAlert = true
                                 } else if object.name == "Crowbar" {
                                     let crowbarItem = InventoryItem(name: "Crowbar", description: "A heavy iron crowbar useful for prying things open.", imageName: "crowbar_image")
                                     gameViewModel.addToInventory(crowbarItem)
                                     gameViewModel.alertMessage = "You picked up the \(object.name)!"
+                                    gameViewModel.showAlert = true
                                 } else {
                                     gameViewModel.alertMessage = object.description
+                                    gameViewModel.showAlert = true
                                 }
-                                gameViewModel.showAlert = true
                             }
                         }
                         .padding()
@@ -162,38 +155,6 @@ struct ContentView: View {
             }
             .alert(isPresented: $gameViewModel.showAlert) {
                 Alert(title: Text("Game"), message: Text(gameViewModel.alertMessage), dismissButton: .default(Text("OK")))
-            }
-            .sheet(isPresented: $showPuzzleInput) {
-                VStack {
-                    Text("Solve the Puzzle")
-                        .font(.title)
-                        .padding()
-                    
-                    if let puzzle = gameViewModel.currentRoom.puzzles.first(where: { !$0.isSolved }) {
-                        Text(puzzle.question)
-                            .padding()
-                        
-                        TextField("Your answer", text: $puzzleAnswer)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding()
-                        
-                        Button("Submit") {
-                            gameViewModel.solvePuzzle(answer: puzzleAnswer)
-                            puzzleAnswer = ""
-                            showPuzzleInput = false
-                        }
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                    
-                    Button("Cancel") {
-                        showPuzzleInput = false
-                    }
-                    .padding()
-                }
-                .padding()
             }
             .onChange(of: stickPosition) {
                 (scene as? GameScene)?.updateStickPosition(stickPosition)
