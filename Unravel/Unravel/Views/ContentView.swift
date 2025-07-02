@@ -11,6 +11,7 @@ import SpriteKit
 struct ContentView: View {
     @EnvironmentObject var gameViewModel: GameViewModel
     @State private var stickPosition: CGPoint = .zero
+    @State private var showRoomDescription = true
 
     // Create a scene
     var scene: SKScene {
@@ -29,33 +30,66 @@ struct ContentView: View {
                 SpriteView(scene: scene)
                     .edgesIgnoringSafeArea(.all)
                 
-                // Room description overlay
-                VStack {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(gameViewModel.currentRoom.name)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .shadow(radius: 2)
+                // Room description overlay (conditional)
+                if showRoomDescription {
+                    VStack {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Text(gameViewModel.currentRoom.name)
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.white)
+                                        .shadow(radius: 2)
+                                    
+                                    Spacer()
+                                    
+                                    Button("✕") {
+                                        showRoomDescription = false
+                                    }
+                                    .foregroundColor(.white)
+                                    .font(.title2)
+                                }
+                                
+                                Text(gameViewModel.currentRoom.description)
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .shadow(radius: 2)
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: 250)
+                            }
+                            .padding()
+                            .background(Color.black.opacity(0.7))
+                            .cornerRadius(10)
                             
-                            Text(gameViewModel.currentRoom.description)
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .shadow(radius: 2)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: 250)
+                            Spacer()
                         }
-                        .padding()
-                        .background(Color.black.opacity(0.7))
-                        .cornerRadius(10)
                         
                         Spacer()
                     }
-                    
-                    Spacer()
+                    .padding(.top, 50)
                 }
-                .padding(.top, 50)
+                
+                // Room info button (when description is hidden)
+                if !showRoomDescription {
+                    VStack {
+                        HStack {
+                            Button("ℹ️") {
+                                showRoomDescription = true
+                            }
+                            .font(.title2)
+                            .padding(12)
+                            .background(Color.black.opacity(0.7))
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                            
+                            Spacer()
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.top, 60)
+                }
                 
                 // Inventory display
                 VStack(alignment: .trailing) {
