@@ -9,6 +9,7 @@ class GameViewModel: ObservableObject {
     @Published var selectedAvatar: Avatar?
     @Published var gameStarted = false
     @Published var nearbyObject: InteractiveObject?
+    @Published var inventory: [InventoryItem] = []
 
     init() {
         loadRooms()
@@ -23,34 +24,106 @@ class GameViewModel: ObservableObject {
     }
 
     func loadRooms() {
-        // Sample data for now. Later, we can load this from a file.
-        let puzzle1 = Puzzle(title: "Riddle Me This", question: "I have cities, but no houses. I have mountains, but no trees. I have water, but no fish. What am I?", answer: "A map")
-        let desk = InteractiveObject(name: "Desk", imageName: "desk_image", position: CGPoint(x: 150, y: 150), description: "A sturdy wooden desk covered in papers.")
-        let room1 = Room(name: "The Scholar's Study", description: "A quiet room filled with books and secrets.", backgroundImage: "study", puzzles: [puzzle1], objects: [desk])
+        // Create a mysterious building with interconnected rooms
+        let puzzle1 = Puzzle(title: "Strange Note", question: "A note on the desk reads: 'The key to freedom lies where knowledge sleeps.' What could this mean?", answer: "library")
+        let desk = InteractiveObject(name: "Desk", imageName: "desk_image", position: CGPoint(x: 150, y: 150), description: "A dusty mahogany desk with papers scattered about. Among the clutter, you find a cryptic note that seems important.")
+        let room1 = Room(name: "Mysterious Office", description: "You slowly regain consciousness in a dimly lit office. Dust motes dance in the pale light filtering through grimy windows. The heavy wooden door behind you is firmly locked - there's no going back. You must find another way out.", backgroundImage: "study", puzzles: [puzzle1], objects: [desk], connectedRooms: ["Dark Hallway"])
 
-        let puzzle2 = Puzzle(title: "Codebreaker", question: "What has to be broken before you can use it?", answer: "An egg")
-        let room2 = Room(name: "The Alchemist's Lab", description: "Potions bubble and strange contraptions whir.", backgroundImage: "lab", puzzles: [puzzle2], objects: [])
+        let puzzle2 = Puzzle(title: "Keypad Lock", question: "A digital keypad blocks your path forward. The display shows: '_ _ _ _'. Four digits are needed. You notice scratches around certain numbers: 1, 9, 8, 7. What year might be significant here?", answer: "1987")
+        let room2 = Room(name: "Dark Hallway", description: "A narrow, windowless hallway stretches before you. Fluorescent lights flicker overhead, casting eerie shadows on the peeling wallpaper. Multiple doors line the corridor, but most are sealed shut. Only one path leads forward, blocked by an electronic keypad.", backgroundImage: "lab", puzzles: [puzzle2], objects: [], connectedRooms: ["Mysterious Office", "Library", "Storage Room"])
         
-        self.rooms = [room1, room2]
+        let libraryKey = InteractiveObject(name: "Old Key", imageName: "key_image", position: CGPoint(x: 200, y: 100), description: "An ornate brass key hidden behind a row of dusty tomes. Its weight feels significant in your hand - this must unlock something important.")
+        let room3 = Room(name: "Library", description: "Towering bookshelves stretch to the ceiling, filled with ancient volumes and forgotten knowledge. The air smells of old paper and secrets. Somewhere in this maze of books lies the key to your escape.", backgroundImage: "study", puzzles: [], objects: [libraryKey], isLocked: true, requiredKey: "Solved Keypad", connectedRooms: ["Dark Hallway"])
+        
+        let puzzle3 = Puzzle(title: "Combination Lock", question: "A combination lock secures a metal cabinet. The hint reads: 'The year this building was constructed.' You notice a faded plaque on the wall showing '1987'.", answer: "1987")
+        let crowbar = InteractiveObject(name: "Crowbar", imageName: "crowbar_image", position: CGPoint(x: 100, y: 200), description: "A heavy iron crowbar. This could be useful for prying open locked doors.")
+        let room4 = Room(name: "Storage Room", description: "A cluttered storage room filled with old furniture and maintenance equipment. The air is stale and heavy with dust. A locked metal cabinet sits in the corner.", backgroundImage: "lab", puzzles: [puzzle3], objects: [crowbar], connectedRooms: ["Dark Hallway"])
+        
+        let puzzle4 = Puzzle(title: "Final Door", question: "The exit door has a complex lock mechanism. You need both the Old Key and the Crowbar to escape. Do you have both items?", answer: "yes")
+        let room5 = Room(name: "Exit Chamber", description: "You stand before the final door - your path to freedom. The lock mechanism is complex, requiring both finesse and force. The Old Key fits one part, but you'll need something to pry open the heavy bolts.", backgroundImage: "study", puzzles: [puzzle4], objects: [], isLocked: true, requiredKey: "Old Key", connectedRooms: [])
+        
+        self.rooms = [room1, room2, room3, room4, room5]
     }
     
+    func addToInventory(_ item: InventoryItem) {
+        if !inventory.contains(item) {
+            inventory.append(item)
+        }
+    }
+    
+    func hasItem(named name: String) -> Bool {
+        return inventory.contains { $0.name == name }
+    }
+    
+    func navigateToRoom(named roomName: String) {
+        if let roomIndex = rooms.firstIndex(where: { $0.name == roomName }) {
+            let targetRoom = rooms[roomIndex]
+            
+            // Check if room is locked
+            if targetRoom.isLocked {
+                if let requiredKey = targetRoom.requiredKey, hasItem(named: requiredKey) {
+                    // Unlock the room
+                    rooms[roomIndex].isLocked = false
+                    currentRoomIndex = roomIndex
+                    alertMessage = "You unlocked the \(roomName) with your \(requiredKey)!"
+                    showAlert = true
+                } else {
+                    alertMessage = "The \(roomName) is locked. You need: \(targetRoom.requiredKey ?? "a key")"
+                    showAlert = true
+                }
+            } else {
+                currentRoomIndex = roomIndex
+            }
+        }
+    }
+
     func setNearbyObject(_ object: InteractiveObject?) {
         if self.nearbyObject?.id != object?.id {
             self.nearbyObject = object
         }
     }
 
-    func submitAnswer(for puzzle: Puzzle, answer: String) {
-        if let roomIndex = rooms.firstIndex(where: { $0.id == currentRoom.id }),
-           let puzzleIndex = rooms[roomIndex].puzzles.firstIndex(where: { $0.id == puzzle.id }) {
-            if rooms[roomIndex].puzzles[puzzleIndex].answer.localizedCaseInsensitiveCompare(answer) == .orderedSame {
-                rooms[roomIndex].puzzles[puzzleIndex].isSolved = true
-                alertMessage = "Correct!"
-            } else {
-                alertMessage = "Wrong answer. Please try again."
+    func solvePuzzle(answer: String) {
+        for i in 0..<rooms[currentRoomIndex].puzzles.count {
+            if !rooms[currentRoomIndex].puzzles[i].isSolved &&
+               rooms[currentRoomIndex].puzzles[i].answer.lowercased() == answer.lowercased() {
+                rooms[currentRoomIndex].puzzles[i].isSolved = true
+                
+                // Handle special puzzle effects
+                let puzzle = rooms[currentRoomIndex].puzzles[i]
+                
+                if puzzle.title == "Keypad Lock" {
+                    // Solving the keypad gives you access to the library
+                    let keypadAccess = InventoryItem(name: "Solved Keypad", description: "You've solved the keypad lock.", imageName: "keypad_solved")
+                    addToInventory(keypadAccess)
+                    alertMessage = "The keypad beeps and turns green. You hear doors unlocking throughout the building..."
+                    showAlert = true
+                } else if puzzle.title == "Combination Lock" {
+                    alertMessage = "The combination lock clicks open! You can now access the cabinet contents."
+                    showAlert = true
+                } else if puzzle.title == "Final Door" {
+                    // Check if player has both required items
+                    if hasItem(named: "Old Key") && hasItem(named: "Crowbar") {
+                        alertMessage = "Congratulations! You use the Old Key to unlock the mechanism and the Crowbar to pry open the heavy bolts. The door swings open and you step into freedom! You have successfully escaped!"
+                        showAlert = true
+                    } else {
+                        rooms[currentRoomIndex].puzzles[i].isSolved = false // Reset if they don't have items
+                        var missingItems: [String] = []
+                        if !hasItem(named: "Old Key") { missingItems.append("Old Key") }
+                        if !hasItem(named: "Crowbar") { missingItems.append("Crowbar") }
+                        alertMessage = "You need both items to escape. Missing: \(missingItems.joined(separator: ", "))"
+                        showAlert = true
+                    }
+                } else {
+                    alertMessage = "Correct! You solved the puzzle."
+                    showAlert = true
+                }
+                
+                return
             }
-            showAlert = true
         }
+        alertMessage = "That's not the right answer. Try again!"
+        showAlert = true
     }
 
     func advanceToNextRoom() {
