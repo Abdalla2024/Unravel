@@ -4,9 +4,9 @@ struct AvatarSelectionView: View {
     @EnvironmentObject var gameViewModel: GameViewModel
     
     let avatars = [
-        Avatar(name: "Male Explorer", imageName: "male_avatar"),
-        Avatar(name: "Female Explorer", imageName: "female_avatar"),
-        Avatar(name: "Robot Explorer", imageName: "robot_avatar")
+        Avatar(name: "Robert", imageName: "male_avatar"),
+        Avatar(name: "Maya", imageName: "female_avatar"),
+        Avatar(name: "Robot", imageName: "robot_avatar")
     ]
     
     @State private var selectedAvatar: Avatar?
