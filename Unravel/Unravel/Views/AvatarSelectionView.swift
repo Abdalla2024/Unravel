@@ -4,9 +4,9 @@ struct AvatarSelectionView: View {
     @EnvironmentObject var gameViewModel: GameViewModel
     
     let avatars = [
-        Avatar(name: "Explorer", imageName: "explorer_avatar"),
-        Avatar(name: "Scientist", imageName: "scientist_avatar"),
-        Avatar(name: "Detective", imageName: "detective_avatar")
+        Avatar(name: "Male Explorer", imageName: "male_avatar"),
+        Avatar(name: "Female Explorer", imageName: "female_avatar"),
+        Avatar(name: "Robot Explorer", imageName: "robot_avatar")
     ]
     
     @State private var selectedAvatar: Avatar?
@@ -21,12 +21,18 @@ struct AvatarSelectionView: View {
                 HStack(spacing: 20) {
                     ForEach(avatars) { avatar in
                         VStack {
-                            // Placeholder for avatar image
-                            Circle()
+                            Image(avatar.imageName)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
                                 .frame(width: 100, height: 100)
-                                .foregroundColor(selectedAvatar == avatar ? .blue : .gray)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(selectedAvatar == avatar ? Color.blue : Color.clear, lineWidth: 4)
+                                )
                             
                             Text(avatar.name)
+                                .font(.caption)
                         }
                         .onTapGesture {
                             selectedAvatar = avatar
