@@ -2,7 +2,7 @@
 //  Avatar.swift
 //  Unravel
 //
-//  Created by Aiden on 6/29/25.
+//  Created by Abdalla Abdelmagid on 6/29/25.
 //
 
 import Foundation
